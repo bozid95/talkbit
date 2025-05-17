@@ -4,7 +4,6 @@ import WordOfTheDay from "@/components/WordOfTheDay";
 import Settings from "@/components/Settings";
 import { fetchSpreadsheetData } from "@/libs/spreadsheets";
 import { WordEntry } from "@/types";
-import BottomNavbar from "@/components/BottomNavbar";
 import Cookies from "js-cookie";
 
 interface HomeProps {
