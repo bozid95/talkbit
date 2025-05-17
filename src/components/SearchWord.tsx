@@ -28,12 +28,16 @@ export default function SearchWords({ allWords }: Props) {
       return;
     }
 
-    const filtered = allWords.filter((w) =>
-      w.English.toLowerCase().includes(searchTerm.toLowerCase())
+    const lowerTerm = searchTerm.toLowerCase();
+    const filtered = allWords.filter(
+      (w) =>
+        w.English.toLowerCase().includes(lowerTerm) ||
+        w.Indonesian.toLowerCase().includes(lowerTerm)
     );
+
     setResults(filtered);
 
-    const hideTranslation = Cookies.get("hide_translation") === "true";
+    const hideTranslation = Cookies.get("hide_translation") === "false";
     const initialShow: Record<string, boolean> = {};
     filtered.forEach((word) => {
       initialShow[word.English] = !hideTranslation;
