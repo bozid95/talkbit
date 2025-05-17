@@ -12,13 +12,17 @@ interface HomeProps {
 export default function Home({ data }: HomeProps) {
   const [limit, setLimit] = useState(10);
 
-  // Sync limit dengan cookie saat mount
   useEffect(() => {
     const savedLimit = Cookies.get("word_limit");
     if (savedLimit) {
-      setLimit(Number(savedLimit));
+      const parsed = Number(savedLimit);
+      if (!isNaN(parsed) && parsed > 0) {
+        setLimit(parsed);
+      }
     }
   }, []);
+
+  // Fungsi update limit sekaligus simpan ke cookie
 
   return (
     <>
@@ -27,9 +31,8 @@ export default function Home({ data }: HomeProps) {
       </Head>
       <main className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold mb-4 text-center">
-            TalkBit APP
-          </h1>
+          <h1 className="text-2xl font-bold mb-4 text-center">TalkBit APP</h1>
+
           <section className="mb-6">
             <WordOfTheDay initialWords={data} limit={limit} />
           </section>
@@ -39,7 +42,6 @@ export default function Home({ data }: HomeProps) {
   );
 }
 
-// SSG
 export async function getStaticProps() {
   try {
     const data = await fetchSpreadsheetData();

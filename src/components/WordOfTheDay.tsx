@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { WordEntry } from "@/types";
 import Cookies from "js-cookie";
-import { Heart, HeartOff, Volume2, Shuffle } from "lucide-react";
+import { Heart, HeartOff, Volume2, RefreshCw } from "lucide-react";
 
 interface Props {
   initialWords: WordEntry[];
@@ -25,77 +25,33 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
     }
   };
 
-  // Fungsi shuffle untuk shuffle manual
-  const shuffleWords = () => {
+  // Fungsi shuffle kata & update cookie
+  const shuffleWords = useCallback(() => {
     const shuffled = [...initialWords].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, limit);
     setWords(selected);
     Cookies.set("saved_words", JSON.stringify(selected), { expires: 3650 });
+    Cookies.set("last_refresh", String(Date.now()), { expires: 3650 });
 
-    // Reset showTranslation sesuai hide_translation
     const hideTranslation = Cookies.get("hide_translation") === "true";
     const initialShow: Record<string, boolean> = {};
     selected.forEach((word) => {
       initialShow[word.English] = !hideTranslation;
     });
     setShowTranslation(initialShow);
-
-    // Update last_refresh supaya di-refresh manual juga dianggap baru
-    Cookies.set("last_refresh", String(Date.now()), { expires: 3650 });
-  };
+  }, [initialWords, limit]); // dependensi sesuai yang dipakai di fungsi
 
   useEffect(() => {
-    const now = Date.now();
-    const lastRefresh = Number(Cookies.get("last_refresh") || 0);
-    const refreshHours = Number(Cookies.get("refresh_interval") || 6);
-    const hideTranslation = Cookies.get("hide_translation") === "true";
+    shuffleWords();
+  }, [shuffleWords]);
 
-    const shouldRefresh = now - lastRefresh > refreshHours * 3600000;
-
-    let selectedWords: WordEntry[] = [];
-
-    if (shouldRefresh) {
-      // Shuffle dan ambil limit kata
-      const shuffled = [...initialWords].sort(() => Math.random() - 0.5);
-      selectedWords = shuffled.slice(0, limit);
-      Cookies.set("last_refresh", String(now), { expires: 3650 });
-      Cookies.set("saved_words", JSON.stringify(selectedWords), {
-        expires: 3650,
-      });
-    } else {
-      // Ambil kata dari cookie, pastikan hanya ambil sesuai limit
-      const savedWords = Cookies.get("saved_words");
-      if (savedWords) {
-        try {
-          const parsed: WordEntry[] = JSON.parse(savedWords);
-          selectedWords = parsed.slice(0, limit);
-        } catch {
-          selectedWords = initialWords.slice(0, limit);
-        }
-      } else {
-        selectedWords = initialWords.slice(0, limit);
-      }
-    }
-
-    setWords(selectedWords);
-
-    // Load favorite dari cookie
+  // Load favorites dari cookie sekali saja saat mount
+  useEffect(() => {
     const favFromCookie = Cookies.get("favorites");
     if (favFromCookie) {
-      try {
-        setFavorites(JSON.parse(favFromCookie));
-      } catch {
-        setFavorites([]);
-      }
+      setFavorites(JSON.parse(favFromCookie));
     }
-
-    // Set initial show translation sesuai hide_translation
-    const initialShow: Record<string, boolean> = {};
-    selectedWords.forEach((word) => {
-      initialShow[word.English] = !hideTranslation;
-    });
-    setShowTranslation(initialShow);
-  }, [initialWords, limit]);
+  }, []);
 
   const toggleFavorite = (english: string) => {
     let updatedFavorites: string[] = [];
@@ -117,24 +73,23 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
     }));
   };
 
+  const hideTranslation = Cookies.get("hide_translation") === "true";
+
   return (
     <div className="bg-white shadow-lg rounded-2xl p-6 mb-8">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">🎯Kalimat Hari Ini</h2>
+        <h2 className="text-2xl font-semibold">🎯 Kata/Kalimat Hari Ini</h2>
         <button
           onClick={shuffleWords}
-          className="flex items-center space-x-1 px-3 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
-          aria-label="Shuffle words"
-          type="button"
+          title="Shuffle kata"
+          className="p-2 rounded hover:bg-gray-200 transition"
         >
-          <Shuffle size={18} />
-          <span>Shuffle</span>
+          <RefreshCw size={20} />
         </button>
       </div>
       <ul className="space-y-4">
         {words.map((w, i) => {
           const isFavorite = favorites.includes(w.English);
-          const hideTranslation = Cookies.get("hide_translation") === "true";
           const isTranslationShown = hideTranslation
             ? showTranslation[w.English] || false
             : true;
