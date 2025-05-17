@@ -40,7 +40,9 @@ export default function FavoriteList({ allWords }: Props) {
   };
 
   return (
-    <div>
+    <div className="bg-white shadow-lg rounded-2xl p-6 mb-8 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-center">❤️ Favorit Saya</h1>
+
       {favoriteWords.length > 0 ? (
         <ul className="space-y-4">
           {favoriteWords.map((w, i) => {
@@ -59,6 +61,7 @@ export default function FavoriteList({ allWords }: Props) {
                 <button
                   onClick={() => toggleFavorite(w.English)}
                   className="text-red-500 hover:scale-110 transition"
+                  aria-label={isFavorite ? "Unfavorite" : "Favorite"}
                 >
                   {isFavorite ? (
                     <Heart className="fill-red-500" />

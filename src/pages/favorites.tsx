@@ -13,9 +13,12 @@ export default function FavoritesPage({ allWords }: FavoritesPageProps) {
       <Head>
         <title>Favorit Saya</title>
       </Head>
-      <main className="min-h-screen bg-gray-50 p-6 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-center">❤️ Favorit Saya</h1>
-        <FavoriteList allWords={allWords} />
+      <main className="min-h-screen bg-gray-50 py-5 px-4">
+        <div className="max-w-2xl md:max-w-3xl mx-auto">
+          <section className="mb-10">
+            <FavoriteList allWords={allWords} />
+          </section>
+        </div>
       </main>
     </>
   );

@@ -39,35 +39,43 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
       initialShow[word.English] = !hideTranslation;
     });
     setShowTranslation(initialShow);
-  }, [initialWords, limit]); // dependensi sesuai yang dipakai di fungsi
+  }, [initialWords, limit]);
 
+  // Load saved_words dari cookie saat mount dan validasi dengan limit
   useEffect(() => {
     const saved = Cookies.get("saved_words");
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as WordEntry[];
-        setWords(parsed);
+        // Jika jumlah kata yang tersimpan sesuai limit, gunakan itu
+        if (parsed.length === limit) {
+          setWords(parsed);
 
-        const hideTranslation = Cookies.get("hide_translation") === "true";
-        const initialShow: Record<string, boolean> = {};
-        parsed.forEach((word) => {
-          initialShow[word.English] = !hideTranslation;
-        });
-        setShowTranslation(initialShow);
+          const hideTranslation = Cookies.get("hide_translation") === "true";
+          const initialShow: Record<string, boolean> = {};
+          parsed.forEach((word) => {
+            initialShow[word.English] = !hideTranslation;
+          });
+          setShowTranslation(initialShow);
+          return; // keluar supaya shuffleWords tidak dipanggil
+        }
       } catch (e) {
-        console.error("Gagal parse saved_words, melakukan shuffle:", e);
-        shuffleWords(); // fallback ke shuffle jika cookie rusak
+        console.error("Gagal parse saved_words:", e);
       }
-    } else {
-      shuffleWords(); // cookie tidak ada, lakukan shuffle
     }
-  }, [shuffleWords]);
+    // Kalau cookie tidak ada atau invalid / tidak sesuai limit, shuffle ulang
+    shuffleWords();
+  }, [limit, shuffleWords, initialWords]);
 
   // Load favorites dari cookie sekali saja saat mount
   useEffect(() => {
     const favFromCookie = Cookies.get("favorites");
     if (favFromCookie) {
-      setFavorites(JSON.parse(favFromCookie));
+      try {
+        setFavorites(JSON.parse(favFromCookie));
+      } catch {
+        // ignore error
+      }
     }
   }, []);
 
@@ -94,9 +102,13 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
   const hideTranslation = Cookies.get("hide_translation") === "true";
 
   return (
-    <div className="bg-white shadow-lg rounded-2xl p-6 mb-8">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">🎯Kalimat Hari Ini</h2>
+    <div className="bg-white shadow-lg rounded-2xl p-6 mb-8 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-center">
+        🎯 Kalimat Hari Ini
+      </h1>
+
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-blue-600">Kata Pilihan</h2>
         <button
           onClick={shuffleWords}
           title="Shuffle kata"
@@ -105,8 +117,9 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
           <RefreshCw size={20} />
         </button>
       </div>
+
       <ul className="space-y-4">
-        {words.map((w, i) => {
+        {words.map((w) => {
           const isFavorite = favorites.includes(w.English);
           const isTranslationShown = hideTranslation
             ? showTranslation[w.English] || false
@@ -114,14 +127,14 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
 
           return (
             <li
-              key={i}
-              className="flex justify-between items-center bg-gray-50 p-4 rounded-xl hover:bg-blue-50 transition"
+              key={w.English}
+              className="flex justify-between items-center bg-gray-50 p-4 rounded-xl hover:bg-blue-50 transition shadow-sm"
             >
               <div
                 className="flex flex-col cursor-pointer"
                 onClick={() => hideTranslation && toggleTranslation(w.English)}
               >
-                <div className="flex items-center space-x-2 text-lg font-medium text-blue-600">
+                <div className="flex items-center space-x-3 text-lg font-medium text-blue-600">
                   <span>{w.English}</span>
                   <button
                     type="button"
@@ -136,11 +149,11 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
                   </button>
                 </div>
                 {isTranslationShown ? (
-                  <div className="text-gray-700 mt-1">{w.Indonesian}</div>
+                  <p className="text-gray-700 mt-1">{w.Indonesian}</p>
                 ) : (
-                  <div className="text-gray-400 mt-1 italic">
+                  <p className="text-gray-400 mt-1 italic select-none">
                     Klik untuk lihat arti
-                  </div>
+                  </p>
                 )}
               </div>
 

@@ -77,6 +77,8 @@ export default function SearchWords({ allWords }: Props) {
 
   return (
     <div className="bg-white shadow-lg rounded-2xl p-6 mb-8">
+      <h1 className="text-2xl font-bold mb-4 text-center">🔍 Cari Kata</h1>
+      <div className="flex justify-between items-center mb-4"></div>
       <input
         type="text"
         value={searchTerm}

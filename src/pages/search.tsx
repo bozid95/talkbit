@@ -1,6 +1,7 @@
 import SearchWords from "@/components/SearchWord";
 import { fetchSpreadsheetData } from "@/libs/spreadsheets";
 import { WordEntry } from "@/types";
+import Head from "next/head";
 
 export async function getStaticProps() {
   const data = await fetchSpreadsheetData();
@@ -12,11 +13,15 @@ export async function getStaticProps() {
 
 export default function SearchPage({ data }: { data: WordEntry[] }) {
   return (
-    <main className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4 text-center">🔍 Cari Kata</h1>
-        <SearchWords allWords={data} />
-      </div>
-    </main>
+    <>
+      <Head>
+        <title>Pencarian</title>
+      </Head>
+      <main className="min-h-screen bg-gray-100 p-4">
+        <div className="max-w-3xl mx-auto">
+          <SearchWords allWords={data} />
+        </div>
+      </main>
+    </>
   );
 }

@@ -29,11 +29,9 @@ export default function Home({ data }: HomeProps) {
       <Head>
         <title>TalkBit</title>
       </Head>
-      <main className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold mb-4 text-center">TalkBit APP</h1>
-
-          <section className="mb-6">
+      <main className="min-h-screen bg-gray-50 py-5 px-4">
+        <div className="max-w-2xl md:max-w-3xl mx-auto">
+          <section className="mb-10">
             <WordOfTheDay initialWords={data} limit={limit} />
           </section>
         </div>
