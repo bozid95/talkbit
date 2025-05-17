@@ -42,7 +42,25 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
   }, [initialWords, limit]); // dependensi sesuai yang dipakai di fungsi
 
   useEffect(() => {
-    shuffleWords();
+    const saved = Cookies.get("saved_words");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as WordEntry[];
+        setWords(parsed);
+
+        const hideTranslation = Cookies.get("hide_translation") === "true";
+        const initialShow: Record<string, boolean> = {};
+        parsed.forEach((word) => {
+          initialShow[word.English] = !hideTranslation;
+        });
+        setShowTranslation(initialShow);
+      } catch (e) {
+        console.error("Gagal parse saved_words, melakukan shuffle:", e);
+        shuffleWords(); // fallback ke shuffle jika cookie rusak
+      }
+    } else {
+      shuffleWords(); // cookie tidak ada, lakukan shuffle
+    }
   }, [shuffleWords]);
 
   // Load favorites dari cookie sekali saja saat mount
