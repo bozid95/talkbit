@@ -1,15 +1,27 @@
-// src/pages/index.tsx
 import Head from "next/head";
+import { useState, useEffect } from "react";
 import WordOfTheDay from "@/components/WordOfTheDay";
+import Settings from "@/components/Settings";
 import { fetchSpreadsheetData } from "@/libs/spreadsheets";
 import { WordEntry } from "@/types";
 import BottomNavbar from "@/components/BottomNavbar";
+import Cookies from "js-cookie";
 
 interface HomeProps {
   data: WordEntry[];
 }
 
 export default function Home({ data }: HomeProps) {
+  const [limit, setLimit] = useState(10);
+
+  // Sync limit dengan cookie saat mount
+  useEffect(() => {
+    const savedLimit = Cookies.get("word_limit");
+    if (savedLimit) {
+      setLimit(Number(savedLimit));
+    }
+  }, []);
+
   return (
     <>
       <Head>
@@ -22,8 +34,8 @@ export default function Home({ data }: HomeProps) {
           </h1>
 
           <section className="mb-6">
-            <WordOfTheDay initialWords={data} limit={10} />
-            <BottomNavbar />
+            <Settings limit={limit} onLimitChange={setLimit} />
+            <WordOfTheDay initialWords={data} limit={limit} />
           </section>
         </div>
       </main>
@@ -31,11 +43,11 @@ export default function Home({ data }: HomeProps) {
   );
 }
 
-// Fungsi ini berjalan di server saat build (SSG)
+// SSG
 export async function getStaticProps() {
   try {
     const data = await fetchSpreadsheetData();
-    return { props: { data }, revalidate: 60 * 60 }; // regenerate setiap jam
+    return { props: { data }, revalidate: 3600 };
   } catch (error) {
     console.error("Error fetching spreadsheet:", error);
     return { props: { data: [] } };
