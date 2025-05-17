@@ -1,6 +1,6 @@
-// app/about/page.tsx
 import { fetchTeamData } from "@/libs/spreadsheets";
 import Head from "next/head";
+import ContributorList from "@/components/About";
 
 export const metadata = {
   title: "Tentang Kami",
@@ -33,7 +33,7 @@ export default async function AboutPage() {
           kalimat bisa akses link spreadsheet ini :{" "}
           <a
             className="inline-block bg-blue-400 text-white px-3 py-1 rounded-full hover:bg-blue-800 transition"
-            href="http://https://docs.google.com/spreadsheets/d/1hafGD9jmP-7NCwhAZ1I45s0D4RBl4t-gS2UlNBMMEvo/edit?hl=id&gid=0#gid=0"
+            href="https://docs.google.com/spreadsheets/d/1hafGD9jmP-7NCwhAZ1I45s0D4RBl4t-gS2UlNBMMEvo/edit?hl=id&gid=0#gid=0"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -44,26 +44,9 @@ export default async function AboutPage() {
         </p>
         <br />
         <p>Terimakasih untuk para kontributor dalam aplikasi ini : </p>
-        <ul className="flex flex-wrap gap-4 mt-4">
-          {team.map((member, i) => (
-            <li key={i}>
-              {member.Link ? (
-                <a
-                  href={member.Link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-blue-700 text-white px-3 py-1 rounded-full hover:bg-blue-800 transition"
-                >
-                  {member.Nama}
-                </a>
-              ) : (
-                <span className="inline-block bg-blue-700 text-white px-3 py-1 rounded-full">
-                  {member.Nama}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
+
+        {/* Panggil komponen ContributorList */}
+        <ContributorList team={team} />
       </div>
     </>
   );
