@@ -1,7 +1,6 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import WordOfTheDay from "@/components/WordOfTheDay";
-import Settings from "@/components/Settings";
 import { fetchSpreadsheetData } from "@/libs/spreadsheets";
 import { WordEntry } from "@/types";
 import Cookies from "js-cookie";
@@ -33,7 +32,6 @@ export default function Home({ data }: HomeProps) {
           </h1>
 
           <section className="mb-6">
-            <Settings limit={limit} onLimitChange={setLimit} />
             <WordOfTheDay initialWords={data} limit={limit} />
           </section>
         </div>

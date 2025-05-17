@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { WordEntry } from "@/types";
 import Cookies from "js-cookie";
-import { Heart, HeartOff, Volume2 } from "lucide-react"; // ikon speaker
+import { Heart, HeartOff, Volume2 } from "lucide-react";
 
 interface Props {
   initialWords: WordEntry[];
@@ -15,26 +15,80 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
     Record<string, boolean>
   >({});
 
-  useEffect(() => {
-    const shuffled = [...initialWords].sort(() => Math.random() - 0.5);
-    setWords(shuffled.slice(0, limit));
+  const playPronunciation = (text: string) => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US";
+      speechSynthesis.speak(utterance);
+    } else {
+      alert("Text-to-speech tidak didukung di browser ini.");
+    }
+  };
 
+  useEffect(() => {
+    const now = Date.now();
+    const lastRefresh = Number(Cookies.get("last_refresh") || 0);
+    const refreshHours = Number(Cookies.get("refresh_interval") || 6);
+    const hideTranslation = Cookies.get("hide_translation") === "true";
+
+    const shouldRefresh = now - lastRefresh > refreshHours * 3600000;
+
+    let selectedWords: WordEntry[] = [];
+
+    if (shouldRefresh) {
+      // Shuffle dan ambil limit kata
+      const shuffled = [...initialWords].sort(() => Math.random() - 0.5);
+      selectedWords = shuffled.slice(0, limit);
+      Cookies.set("last_refresh", String(now), { expires: 3650 });
+      Cookies.set("saved_words", JSON.stringify(selectedWords), {
+        expires: 3650,
+      });
+    } else {
+      // Ambil kata dari cookie, pastikan hanya ambil sesuai limit
+      const savedWords = Cookies.get("saved_words");
+      if (savedWords) {
+        try {
+          const parsed: WordEntry[] = JSON.parse(savedWords);
+          selectedWords = parsed.slice(0, limit);
+        } catch {
+          selectedWords = initialWords.slice(0, limit);
+        }
+      } else {
+        selectedWords = initialWords.slice(0, limit);
+      }
+    }
+
+    setWords(selectedWords);
+
+    // Load favorite dari cookie
     const favFromCookie = Cookies.get("favorites");
     if (favFromCookie) {
-      setFavorites(JSON.parse(favFromCookie));
+      try {
+        setFavorites(JSON.parse(favFromCookie));
+      } catch {
+        setFavorites([]);
+      }
     }
-    setShowTranslation({});
+
+    // Set initial show translation sesuai hide_translation
+    const initialShow: Record<string, boolean> = {};
+    selectedWords.forEach((word) => {
+      initialShow[word.English] = !hideTranslation;
+    });
+    setShowTranslation(initialShow);
   }, [initialWords, limit]);
 
   const toggleFavorite = (english: string) => {
-    let updatedFavorites: string[];
+    let updatedFavorites: string[] = [];
     if (favorites.includes(english)) {
       updatedFavorites = favorites.filter((f) => f !== english);
     } else {
       updatedFavorites = [...favorites, english];
     }
     setFavorites(updatedFavorites);
-    Cookies.set("favorites", JSON.stringify(updatedFavorites), { expires: 30 });
+    Cookies.set("favorites", JSON.stringify(updatedFavorites), {
+      expires: 3650,
+    });
   };
 
   const toggleTranslation = (english: string) => {
@@ -44,24 +98,16 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
     }));
   };
 
-  // Fungsi untuk play suara kata Inggris
-  const playPronunciation = (text: string) => {
-    if ("speechSynthesis" in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "en-US"; // bahasa Inggris US
-      speechSynthesis.speak(utterance);
-    } else {
-      alert("Text-to-speech tidak didukung di browser ini.");
-    }
-  };
-
   return (
     <div className="bg-white shadow-lg rounded-2xl p-6 mb-8">
       <h2 className="text-2xl font-semibold mb-4">🎯 Kata/Kalimat Hari Ini</h2>
       <ul className="space-y-4">
         {words.map((w, i) => {
           const isFavorite = favorites.includes(w.English);
-          const isTranslationShown = showTranslation[w.English] || false;
+          const hideTranslation = Cookies.get("hide_translation") === "true";
+          const isTranslationShown = hideTranslation
+            ? showTranslation[w.English] || false
+            : true;
 
           return (
             <li
@@ -70,14 +116,14 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
             >
               <div
                 className="flex flex-col cursor-pointer"
-                onClick={() => toggleTranslation(w.English)}
+                onClick={() => hideTranslation && toggleTranslation(w.English)}
               >
                 <div className="flex items-center space-x-2 text-lg font-medium text-blue-600">
                   <span>{w.English}</span>
                   <button
                     type="button"
                     onClick={(e) => {
-                      e.stopPropagation(); // supaya gak trigger toggle terjemahan juga
+                      e.stopPropagation();
                       playPronunciation(w.English);
                     }}
                     aria-label={`Play pronunciation of ${w.English}`}
