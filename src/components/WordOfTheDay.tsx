@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { WordEntry } from "@/types";
 import Cookies from "js-cookie";
-import { Heart, HeartOff } from "lucide-react";
+import { Heart, HeartOff, Volume2 } from "lucide-react"; // ikon speaker
 
 interface Props {
   initialWords: WordEntry[];
@@ -11,7 +11,6 @@ interface Props {
 export default function WordOfTheDay({ initialWords, limit }: Props) {
   const [words, setWords] = useState<WordEntry[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
-  // Simpan state "show/hide" terjemahan per kata, pakai objek keyed by English word
   const [showTranslation, setShowTranslation] = useState<
     Record<string, boolean>
   >({});
@@ -24,7 +23,6 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
     if (favFromCookie) {
       setFavorites(JSON.parse(favFromCookie));
     }
-    // Reset showTranslation saat kata berubah (opsional)
     setShowTranslation({});
   }, [initialWords, limit]);
 
@@ -35,17 +33,26 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
     } else {
       updatedFavorites = [...favorites, english];
     }
-
     setFavorites(updatedFavorites);
     Cookies.set("favorites", JSON.stringify(updatedFavorites), { expires: 30 });
   };
 
-  // Toggle show/hide terjemahan untuk kata tertentu
   const toggleTranslation = (english: string) => {
     setShowTranslation((prev) => ({
       ...prev,
       [english]: !prev[english],
     }));
+  };
+
+  // Fungsi untuk play suara kata Inggris
+  const playPronunciation = (text: string) => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-US"; // bahasa Inggris US
+      speechSynthesis.speak(utterance);
+    } else {
+      alert("Text-to-speech tidak didukung di browser ini.");
+    }
   };
 
   return (
@@ -62,11 +69,22 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
               className="flex justify-between items-center bg-gray-50 p-4 rounded-xl hover:bg-blue-50 transition"
             >
               <div
-                className="cursor-pointer"
+                className="flex flex-col cursor-pointer"
                 onClick={() => toggleTranslation(w.English)}
               >
-                <div className="text-lg font-medium text-blue-600">
-                  {w.English}
+                <div className="flex items-center space-x-2 text-lg font-medium text-blue-600">
+                  <span>{w.English}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation(); // supaya gak trigger toggle terjemahan juga
+                      playPronunciation(w.English);
+                    }}
+                    aria-label={`Play pronunciation of ${w.English}`}
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    <Volume2 size={20} />
+                  </button>
                 </div>
                 {isTranslationShown ? (
                   <div className="text-gray-700 mt-1">{w.Indonesian}</div>
