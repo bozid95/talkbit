@@ -23,14 +23,13 @@ export default function Home({ data }: HomeProps) {
   return (
     <>
       <Head>
-        <title>Belajar Bahasa Inggris</title>
+        <title>TalkBit</title>
       </Head>
       <main className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold mb-4 text-center">
-            📘 Belajar Bahasa Inggris
+            TalkBit APP
           </h1>
-
           <section className="mb-6">
             <WordOfTheDay initialWords={data} limit={limit} />
           </section>

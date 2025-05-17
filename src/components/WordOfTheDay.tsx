@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { WordEntry } from "@/types";
 import Cookies from "js-cookie";
-import { Heart, HeartOff, Volume2 } from "lucide-react";
+import { Heart, HeartOff, Volume2, Shuffle } from "lucide-react";
 
 interface Props {
   initialWords: WordEntry[];
@@ -23,6 +23,25 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
     } else {
       alert("Text-to-speech tidak didukung di browser ini.");
     }
+  };
+
+  // Fungsi shuffle untuk shuffle manual
+  const shuffleWords = () => {
+    const shuffled = [...initialWords].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, limit);
+    setWords(selected);
+    Cookies.set("saved_words", JSON.stringify(selected), { expires: 3650 });
+
+    // Reset showTranslation sesuai hide_translation
+    const hideTranslation = Cookies.get("hide_translation") === "true";
+    const initialShow: Record<string, boolean> = {};
+    selected.forEach((word) => {
+      initialShow[word.English] = !hideTranslation;
+    });
+    setShowTranslation(initialShow);
+
+    // Update last_refresh supaya di-refresh manual juga dianggap baru
+    Cookies.set("last_refresh", String(Date.now()), { expires: 3650 });
   };
 
   useEffect(() => {
@@ -100,7 +119,18 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
 
   return (
     <div className="bg-white shadow-lg rounded-2xl p-6 mb-8">
-      <h2 className="text-2xl font-semibold mb-4">🎯 Kata/Kalimat Hari Ini</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-semibold">🎯 Kata/Kalimat Hari Ini</h2>
+        <button
+          onClick={shuffleWords}
+          className="flex items-center space-x-1 px-3 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
+          aria-label="Shuffle words"
+          type="button"
+        >
+          <Shuffle size={18} />
+          <span>Shuffle</span>
+        </button>
+      </div>
       <ul className="space-y-4">
         {words.map((w, i) => {
           const isFavorite = favorites.includes(w.English);

@@ -13,7 +13,7 @@ export default function BottomNavbar() {
   ];
 
   return (
-    <nav className="fixed bottom-0 max-w-3xl w-full bg-white border-t border-gray-300 shadow-inner flex justify-around items-center">
+    <nav className="fixed bottom-0 max-w-3xl w-full bg-white border-t border-gray-300 shadow-inner flex justify-around items-center py-2">
       {navItems.map(({ href, label, icon }) => {
         const isActive = router.pathname === href;
         return (
