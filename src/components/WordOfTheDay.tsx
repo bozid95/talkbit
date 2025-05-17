@@ -120,7 +120,7 @@ export default function WordOfTheDay({ initialWords, limit }: Props) {
   return (
     <div className="bg-white shadow-lg rounded-2xl p-6 mb-8">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-semibold">🎯 Kata/Kalimat Hari Ini</h2>
+        <h2 className="text-2xl font-semibold">🎯Kalimat Hari Ini</h2>
         <button
           onClick={shuffleWords}
           className="flex items-center space-x-1 px-3 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
