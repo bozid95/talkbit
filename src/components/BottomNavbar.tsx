@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Home, Heart, Search, Settings } from "lucide-react";
+import { Home, Heart, Search, Settings, Info } from "lucide-react";
 
 export default function BottomNavbar() {
   const router = useRouter();
@@ -9,7 +9,8 @@ export default function BottomNavbar() {
     { href: "/", label: "Home", icon: <Home size={24} /> },
     { href: "/favorites", label: "Favorites", icon: <Heart size={24} /> },
     { href: "/search", label: "Search", icon: <Search size={24} /> },
-    { href: "/settings", label: "Settings", icon: <Settings size={24} /> },
+    { href: "/about", label: "Tentang", icon: <Info size={24} /> },
+    { href: "/settings", label: "Pengaturan", icon: <Settings size={24} /> },
   ];
 
   return (
