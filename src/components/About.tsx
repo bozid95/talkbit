@@ -1,3 +1,4 @@
+// components/ContributorList.tsx
 type Member = {
   Nama: string;
   Link?: string;
