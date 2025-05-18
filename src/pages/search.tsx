@@ -1,17 +1,16 @@
 import SearchWords from "@/components/SearchWord";
-import { fetchSpreadsheetData } from "@/libs/spreadsheets";
-import { WordEntry } from "@/types";
+import useSWR from "swr";
 import Head from "next/head";
+import { WordEntry } from "@/types";
 
-export async function getStaticProps() {
-  const data = await fetchSpreadsheetData();
-  return {
-    props: { data },
-    revalidate: 3600,
-  };
-}
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function SearchPage({ data }: { data: WordEntry[] }) {
+export default function SearchPage() {
+  const { data, error } = useSWR<WordEntry[]>("/api/words", fetcher);
+
+  if (error) return <div>Gagal memuat data kata.</div>;
+  if (!data) return <div>Loading...</div>;
+
   return (
     <>
       <Head>
