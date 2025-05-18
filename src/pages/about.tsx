@@ -1,13 +1,13 @@
-import { fetchTeamData } from "@/libs/spreadsheets";
+"use client";
+
 import Head from "next/head";
+import useSWR from "swr";
 import ContributorList from "@/components/About";
 
-export const metadata = {
-  title: "Tentang Kami",
-};
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default async function AboutPage() {
-  const team = await fetchTeamData();
+export default function AboutPage() {
+  const { data: team, error, isLoading } = useSWR("/api/contributors", fetcher);
 
   return (
     <>
@@ -43,10 +43,15 @@ export default async function AboutPage() {
           namanya di sheet kedua ya..
         </p>
         <br />
-        <p>Terimakasih untuk para kontributor dalam aplikasi ini : </p>
+        <p>Terimakasih untuk para kontributor dalam aplikasi ini:</p>
 
-        {/* Panggil komponen ContributorList */}
-        <ContributorList team={team} />
+        {isLoading && (
+          <p className="text-gray-500 mt-4">Memuat kontributor...</p>
+        )}
+        {error && (
+          <p className="text-red-500 mt-4">Gagal memuat data kontributor.</p>
+        )}
+        {team && <ContributorList team={team} />}
       </div>
     </>
   );

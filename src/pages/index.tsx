@@ -1,16 +1,24 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
+import useSWR from "swr";
 import WordOfTheDay from "@/components/WordOfTheDay";
-import { fetchSpreadsheetData } from "@/libs/spreadsheets";
 import { WordEntry } from "@/types";
 import Cookies from "js-cookie";
 
-interface HomeProps {
-  data: WordEntry[];
-}
+// Fetcher untuk SWR
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function Home({ data }: HomeProps) {
+export default function Home() {
   const [limit, setLimit] = useState(10);
+
+  // Ambil data dari API dengan SWR
+  const { data, error, isLoading } = useSWR<WordEntry[]>(
+    "/api/words",
+    fetcher,
+    {
+      refreshInterval: 60000, // refresh setiap 60 detik (opsional)
+    }
+  );
 
   useEffect(() => {
     const savedLimit = Cookies.get("word_limit");
@@ -22,7 +30,8 @@ export default function Home({ data }: HomeProps) {
     }
   }, []);
 
-  // Fungsi update limit sekaligus simpan ke cookie
+  if (error) return <p className="text-red-500">Gagal memuat data..</p>;
+  if (isLoading || !data) return <p>Memuat...</p>;
 
   return (
     <>
@@ -38,14 +47,4 @@ export default function Home({ data }: HomeProps) {
       </main>
     </>
   );
-}
-
-export async function getStaticProps() {
-  try {
-    const data = await fetchSpreadsheetData();
-    return { props: { data }, revalidate: 3600 };
-  } catch (error) {
-    console.error("Error fetching spreadsheet:", error);
-    return { props: { data: [] } };
-  }
 }
